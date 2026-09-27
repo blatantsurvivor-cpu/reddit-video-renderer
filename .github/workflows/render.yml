@@ -8,15 +8,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install FFmpeg
+      - name: Install FFmpeg and yt-dlp
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
+          python3 -m pip install -U "yt-dlp[default]"
 
-      - name: Test renderer
+      - name: Download Minecraft gameplay
         run: |
-          ffmpeg -version
-          echo "RENDERER READY"
+          yt-dlp \
+            -f "best[height<=1080]" \
+            --no-playlist \
+            -o gameplay.mp4 \
+            "https://youtu.be/85z7jqGAGcc"
+
+      - name: Check downloaded video
+        run: |
+          ls -lh gameplay.mp4
+          ffprobe -v error -show_entries format=duration,size \
+            -of default=noprint_wrappers=1 gameplay.mp4
