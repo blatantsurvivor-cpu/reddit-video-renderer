@@ -8,22 +8,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install FFmpeg and yt-dlp
+      - name: Install FFmpeg
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          python3 -m pip install -U "yt-dlp[default]"
 
       - name: Download Minecraft gameplay
         run: |
-          yt-dlp \
-            -f "best[height<=1080]" \
-            --no-playlist \
-            -o gameplay.mp4 \
-            "https://youtu.be/85z7jqGAGcc"
+          wget -O gameplay.mp4 \
+          https://github.com/blatantsurvivor-cpu/reddit-video-renderer/releases/download/v1.0/minecraft_test_1080p.mp4
 
-      - name: Check downloaded video
+      - name: Check gameplay
         run: |
           ls -lh gameplay.mp4
-          ffprobe -v error -show_entries format=duration,size \
-            -of default=noprint_wrappers=1 gameplay.mp4
+          ffprobe -v error \
+            -show_entries format=duration,size \
+            -of default=noprint_wrappers=1 \
+            gameplay.mp4
+
+      - name: Test renderer
+        run: |
+          echo "GAMEPLAY DOWNLOADED SUCCESSFULLY"
