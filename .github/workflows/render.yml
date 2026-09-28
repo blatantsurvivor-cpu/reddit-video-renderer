@@ -18,14 +18,33 @@ jobs:
           wget -O gameplay.mp4 \
           https://github.com/blatantsurvivor-cpu/reddit-video-renderer/releases/download/v1.0/minecraft_test_1080p.mp4
 
-      - name: Check gameplay
+      - name: Download Polly narration
         run: |
-          ls -lh gameplay.mp4
-          ffprobe -v error \
-            -show_entries format=duration,size \
-            -of default=noprint_wrappers=1 \
-            gameplay.mp4
+          wget -O narration.mp3 \
+          https://github.com/blatantsurvivor-cpu/reddit-video-renderer/releases/download/v1.0/binary-data.mp3
 
-      - name: Test renderer
+      - name: Check files
         run: |
-          echo "GAMEPLAY DOWNLOADED SUCCESSFULLY"
+          ls -lh gameplay.mp4 narration.mp3
+          ffprobe -v error -show_entries format=duration \
+            -of default=noprint_wrappers=1 narration.mp3
+
+      - name: Render video
+        run: |
+          ffmpeg \
+            -stream_loop -1 -i gameplay.mp4 \
+            -i narration.mp3 \
+            -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920" \
+            -c:v libx264 \
+            -preset veryfast \
+            -crf 23 \
+            -c:a aac \
+            -b:a 128k \
+            -shortest \
+            output.mp4
+
+      - name: Upload finished video
+        uses: actions/upload-artifact@v4
+        with:
+          name: reddit-video-test
+          path: output.mp4
